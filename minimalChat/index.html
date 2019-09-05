@@ -1,0 +1,49 @@
+<body>
+    <input type="text" id="nickname" value="nickname"><br>
+    digita a mensagem: <input type="text" id="textInput" size="100">
+    <hr>
+    <p id="textOut" style="font-family: 'Courier New', Courier, monospace"></p>
+</body>
+<script>
+
+
+var out = document.getElementById("textOut");
+var textInput = document.getElementById("textInput");
+var nickInput = document.getElementById("nickname");
+
+var nickname = nickInput.value;
+
+var conn = new WebSocket("ws://localhost:8000/chat");
+
+conn.onopen = function() {
+    appendOutput("conectando...");
+    conn.send("enter " + nickname);
+};
+
+conn.onerror = function(err) {
+    console.log("error: " + err);
+};
+
+conn.onmessage = function(e) {
+    appendOutput(e.data);
+};
+
+nickInput.onchange = function (e) {
+    nickInput.value = nickInput.value.replace(/\s/g, "");
+    var newNick = nickInput.value;
+    conn.send("change " + nickname + " to " + newNick);
+    nickname = newNick;
+};
+
+function appendOutput(text) {
+    out.innerHTML += text + "</br>";
+}
+
+textInput.onkeypress = function (e) {
+    if(e.key == "Enter") {
+        conn.send("msg " + nickname + " " + textInput.value);
+        textInput.value = "";
+    }
+};
+
+</script>
